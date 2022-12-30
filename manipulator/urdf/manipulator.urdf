@@ -1,19 +1,209 @@
 <?xml version="1.0" ?>
 <robot name="manipulator" xmlns:xacro="http://ros.org/wiki/xacro">
 
+  <!-- ************************************************************ -->
+  <!-- example for xacro:perperty -->
+
+  <xacro:property name="radius" value="0.1"/>
+
+  <xacro:property name="width" value="0.05"/>
+  <xacro:property name="length" value="0.05"/>
+  <xacro:property name="height" value="0.2"/>
+  <xacro:property name="mass" value="0.1"/>
+  <xacro:property name="joint_height" value="0.05"/>
+
+  <!-- ************************************************************ -->
+  <!-- example for conditional blocks -->
+  <xacro:property name="servo_180" value="1"/>
+
+  <xacro:if value="${servo_180 == 1}">
+    <xacro:property name="circle_revolute_lower" value="${-pi/2}"/>
+    <xacro:property name="circle_revolute_upper" value="${pi/2}"/>
+  </xacro:if>
+  <xacro:unless value="${servo_180 == 1}">
+    <xacro:property name="circle_revolute_lower" value="${-radians(180)}"/>
+    <xacro:property name="circle_revolute_upper" value="${radians(180)}"/>
+  </xacro:unless>
+
+  <!--
+  <xacro:property name="servo_revolute_type" value="${[1,2,3]}"/>
+  -->
+  <xacro:property name="servo_revolute_type" value="${[1]}"/>
+
+  <xacro:if value="${1 in servo_revolute_type}">
+    <xacro:property name="revolute_lower" value="${0}"/>
+    <xacro:property name="revolute_upper" value="${-pi/2}"/>
+  </xacro:if>
+
+  <xacro:if value="${2 in servo_revolute_type}">
+    <xacro:property name="revolute_lower" value="${pi/2}"/>
+    <xacro:property name="revolute_upper" value="${-pi/2}"/>
+  </xacro:if>
+
+  <xacro:if value="${3 in servo_revolute_type}">
+    <xacro:property name="revolute_lower" value="${pi}"/>
+    <xacro:property name="revolute_upper" value="${-pi}"/>
+  </xacro:if>
+
+  <!-- ************************************************************ -->
+  <!-- example for xacro:perperty block -->
+  <xacro:property name="red_material">
+    <material name="red">
+      <color rgba="1.0 0.0 0.0 1.0"/>
+    </material>
+  </xacro:property>
+
+  <xacro:property name="green_material">
+    <material name="green">
+      <color rgba="0.0 1.0 0.0 1.0"/>
+    </material>
+  </xacro:property>
+
+  <xacro:property name="yellow_material">
+    <material name="yellow">
+      <color rgba="1.0 1.0 0.0 1.0"/>
+    </material>
+  </xacro:property>
+
+  <xacro:property name="blue_material">
+    <material name="blue">
+      <color rgba="0.0 0.0 1.0 1.0"/>
+    </material>
+  </xacro:property>
+
+  <!-- ############################################################ -->
+  <xacro:property name="link_inertial_cyliner">
+    <inertial>
+      <origin xyz="0.0 0.0 ${height/2}" rpy="0.0 0.0 0.0"/>
+      <mass value="${mass}"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </xacro:property>
+
+  <xacro:property name="link_visual_cyliner">
+    <visual>
+      <origin xyz="0 0 ${height/2}" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="${radius}" length="${height}" />
+      </geometry>
+      <xacro:insert_block name="red_material" />
+    </visual>
+  </xacro:property>
+
+  <xacro:property name="link_collision_cyliner">
+    <origin xyz="0 0 ${height/2}" rpy="0 0 0" />
+    <geometry>
+      <cylinder radius="${radius}" length="${height}" />
+    </geometry>
+  </xacro:property>
+
+  <!-- ############################################################ -->
+  <xacro:property name="link_inertial_box">
+    <inertial>
+      <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
+      <mass value="${mass}"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </xacro:property>
+
+  <xacro:property name="link_visual_box">
+    <visual>
+      <origin xyz="0 0 ${height/2+joint_height}" rpy="0 0 0" />
+      <geometry>
+        <box size="${width} ${length} ${height}"/>
+      </geometry>
+      <xacro:insert_block name="yellow_material" />
+    </visual>
+  </xacro:property>
+
+  <xacro:property name="link_collision_box">
+    <collision>
+      <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="${width} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </xacro:property>
+
+  <!-- ************************************************************ -->
+  <!-- example for xacro:macro -->
+  <xacro:macro name="link_box_macro" params="suffix">
+    <link name="link_${suffix}">
+      <xacro:insert_block name="link_inertial_box" />
+      <xacro:insert_block name="link_visual_box" />
+      <xacro:insert_block name="link_collision_box" />
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="revolute_circle_joint_macro" params="suffix parent child axis:='0.0 0.0 1.0'">
+    <joint name="joint_${suffix}" type="revolute">
+      <origin xyz="0.0 0.0 ${joint_height+height}" rpy="0.0 0.0 0.0"/>
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${circle_revolute_lower}" upper="${circle_revolute_upper}" effort="30" velocity="1"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="revolute_joint_macro" params="suffix parent child axis">
+    <joint name="joint_${suffix}" type="revolute">
+      <origin xyz="0.0 0.0 ${joint_height+height}" rpy="0.0 0.0 0.0"/>
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${revolute_lower}" upper="${revolute_upper}" effort="30" velocity="1"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- ============================================================ -->
+  <!-- link -->
   <link name="footprint_link" />
 
-  <link name="base_link">
-    <visual>
-      <geometry>
-        <cylinder length="0.6" radius="0.2"/>
-      </geometry>
-    </visual>
-  </link>
-
+  <!-- ============================================================ -->
+  <!-- joint -->
   <joint name="base_joint" type="fixed">
     <parent link="footprint_link"/>
     <child link="base_link"/>
   </joint>
+
+  <!-- ============================================================ -->
+  <!-- link -->
+  <link name="base_link">
+    <xacro:insert_block name="link_inertial_cyliner" />
+    <xacro:insert_block name="link_visual_cyliner" />
+    <xacro:insert_block name="link_collision_cyliner" />
+  </link>
+
+  <!-- ============================================================ -->
+  <!-- joint -->
+  <xacro:revolute_circle_joint_macro suffix="1" parent="base_link" child="link_1" />
+
+  <!-- ============================================================ -->
+  <!-- link -->
+  <xacro:link_box_macro suffix="1"  />
+
+  <!-- ============================================================ -->
+  <!-- joint -->
+  <xacro:revolute_joint_macro suffix="2" parent="link_1" child="link_2" axis="1.0 0.0 0.0" />
+
+  <!-- ============================================================ -->
+  <!-- link -->
+  <xacro:link_box_macro suffix="2" />
+
+  <!-- ============================================================ -->
+  <!-- joint -->
+  <xacro:revolute_joint_macro suffix="3" parent="link_2" child="link_3" axis="1.0 0.0 0.0" />
+
+  <!-- ============================================================ -->
+  <!-- link -->
+  <xacro:link_box_macro suffix="3" />
+
+  <!-- ============================================================ -->
+  <!-- joint -->
+  <xacro:revolute_joint_macro suffix="4" parent="link_3" child="link_4" axis="1.0 0.0 0.0" />
+
+  <!-- ============================================================ -->
+  <!-- link -->
+  <xacro:link_box_macro suffix="4" />
 
 </robot>
