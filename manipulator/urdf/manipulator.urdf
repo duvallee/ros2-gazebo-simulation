@@ -4,13 +4,16 @@
   <!-- ************************************************************ -->
   <!-- example for xacro:perperty -->
 
-  <xacro:property name="radius" value="0.1"/>
+  <xacro:property name="base_radius" value="0.1"/>
+  <xacro:property name="base_height" value="0.2"/>
 
-  <xacro:property name="width" value="0.05"/>
-  <xacro:property name="length" value="0.05"/>
-  <xacro:property name="height" value="0.2"/>
+  <xacro:property name="arm_width" value="0.05"/>
+  <xacro:property name="arm_length" value="0.05"/>
+  <xacro:property name="arm_height" value="0.2"/>
+
+  <xacro:property name="extra_height" value="0.05"/>
+
   <xacro:property name="mass" value="0.1"/>
-  <xacro:property name="joint_height" value="0.05"/>
 
   <!-- ************************************************************ -->
   <!-- example for conditional blocks -->
@@ -28,7 +31,7 @@
   <!--
   <xacro:property name="servo_revolute_type" value="${[1,2,3]}"/>
   -->
-  <xacro:property name="servo_revolute_type" value="${[1]}"/>
+  <xacro:property name="servo_revolute_type" value="${[2]}"/>
 
   <xacro:if value="${1 in servo_revolute_type}">
     <xacro:property name="revolute_lower" value="${0}"/>
@@ -74,7 +77,7 @@
   <!-- ############################################################ -->
   <xacro:property name="link_inertial_cyliner">
     <inertial>
-      <origin xyz="0.0 0.0 ${height/2}" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${base_height/2}" rpy="0.0 0.0 0.0"/>
       <mass value="${mass}"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
@@ -82,25 +85,25 @@
 
   <xacro:property name="link_visual_cyliner">
     <visual>
-      <origin xyz="0 0 ${height/2}" rpy="0 0 0" />
+      <origin xyz="0 0 ${base_height/2}" rpy="0 0 0" />
       <geometry>
-        <cylinder radius="${radius}" length="${height}" />
+        <cylinder radius="${base_radius}" length="${base_height}" />
       </geometry>
       <xacro:insert_block name="red_material" />
     </visual>
   </xacro:property>
 
   <xacro:property name="link_collision_cyliner">
-    <origin xyz="0 0 ${height/2}" rpy="0 0 0" />
+    <origin xyz="0 0 ${base_height/2}" rpy="0 0 0" />
     <geometry>
-      <cylinder radius="${radius}" length="${height}" />
+      <cylinder radius="${base_radius}" length="${base_height}" />
     </geometry>
   </xacro:property>
 
   <!-- ############################################################ -->
   <xacro:property name="link_inertial_box">
     <inertial>
-      <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${arm_height/2+extra_height}" rpy="0.0 0.0 0.0"/>
       <mass value="${mass}"/>
       <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
     </inertial>
@@ -108,9 +111,9 @@
 
   <xacro:property name="link_visual_box">
     <visual>
-      <origin xyz="0 0 ${height/2+joint_height}" rpy="0 0 0" />
+      <origin xyz="0 0 ${arm_height/2+extra_height}" rpy="0 0 0" />
       <geometry>
-        <box size="${width} ${length} ${height}"/>
+        <box size="${arm_width} ${arm_length} ${arm_height}"/>
       </geometry>
       <xacro:insert_block name="yellow_material" />
     </visual>
@@ -118,9 +121,9 @@
 
   <xacro:property name="link_collision_box">
     <collision>
-      <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${arm_height/2+extra_height}" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <box size="${width} ${width} ${height}"/>
+        <box size="${arm_width} ${arm_length} ${arm_height}"/>
       </geometry>
     </collision>
   </xacro:property>
@@ -137,7 +140,7 @@
 
   <xacro:macro name="revolute_circle_joint_macro" params="suffix parent child axis:='0.0 0.0 1.0'">
     <joint name="joint_${suffix}" type="revolute">
-      <origin xyz="0.0 0.0 ${joint_height+height}" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${extra_height+base_height}" rpy="0.0 0.0 0.0"/>
       <parent link="${parent}"/>
       <child link="${child}"/>
       <axis xyz="${axis}"/>
@@ -147,7 +150,7 @@
 
   <xacro:macro name="revolute_joint_macro" params="suffix parent child axis">
     <joint name="joint_${suffix}" type="revolute">
-      <origin xyz="0.0 0.0 ${joint_height+height}" rpy="0.0 0.0 0.0"/>
+      <origin xyz="0.0 0.0 ${extra_height+arm_height}" rpy="0.0 0.0 0.0"/>
       <parent link="${parent}"/>
       <child link="${child}"/>
       <axis xyz="${axis}"/>
