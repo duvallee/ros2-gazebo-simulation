@@ -15,3 +15,5 @@ ROS2-foxy 버전에서 URDF 시뮬레이션을 위한 작업 공간을 만드는
 실행은 다음과 같습니다.
 
 \$ ros2 launch manipulator manipulator.launch.py
+
+![screenshot](https://user-images.githubusercontent.com/6201935/210193167-78549a7f-6959-41dd-ab90-45a71fc8bd9c.png)
